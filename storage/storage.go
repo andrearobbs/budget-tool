@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"io/ioutil"
 
-	"gitlab.com/parallellearning/lessons/lesson-08/andreas-palace/budget"
+	"github.com/andrearobbs/budget-tool/budget"
 )
 
 const filename = "budget.json"
