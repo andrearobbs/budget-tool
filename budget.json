@@ -1,14 +1,22 @@
 [
     {
         "Name": "Hotel",
-        "Cost": 311
+        "Cost": 311.98
     },
     {
         "Name": "Tickets",
-        "Cost": 184
+        "Cost": 184.12
     },
     {
         "Name": "Gas",
-        "Cost": 91
+        "Cost": 91.25
+    },
+    {
+        "Name": "Monday Dinner",
+        "Cost": 52.82
+    },
+    {
+        "Name": "Tuesday Breakfast",
+        "Cost": 32.06
     }
 ]

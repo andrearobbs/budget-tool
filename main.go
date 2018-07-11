@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"strconv"
 
-	"gitlab.com/parallellearning/lessons/lesson-08/andreas-palace/budget"
-	"gitlab.com/parallellearning/lessons/lesson-08/andreas-palace/storage"
+	"github.com/andrearobbs/budget-tool/budget"
+	"github.com/andrearobbs/budget-tool/storage"
 
 	"github.com/manifoldco/promptui"
 )
