@@ -6,18 +6,21 @@ import (
 	"strconv"
 
 	"gitlab.com/parallellearning/lessons/lesson-08/andreas-palace/budget"
+	"gitlab.com/parallellearning/lessons/lesson-08/andreas-palace/storage"
 
-	fixerio "github.com/fadion/gofixerio"
 	"github.com/manifoldco/promptui"
 )
 
 const (
-	viewBudgetCmd    = "View Budget"
-	addExpenseCmd    = "Add an Expense to Budget"
-	currConverterCmd = "Convert Total to Pesos (MXN)"
+	viewBudgetCmd = "View Budget"
+	addExpenseCmd = "Add an Expense to Budget"
+	//currConverterCmd = "Convert Total to Pesos (MXN)"
 )
 
 func main() {
+
+	storage.Load()
+
 	for {
 		fmt.Println()
 
@@ -26,7 +29,7 @@ func main() {
 			Items: []string{
 				viewBudgetCmd,
 				addExpenseCmd,
-				currConverterCmd,
+				//currConverterCmd,
 			},
 		}
 
@@ -47,8 +50,8 @@ func main() {
 				return
 			}
 
-		case currConverterCmd:
-			currencyConverter(budget.CalculateGrandTotal)
+			//case currConverterCmd:
+			//currencyConverter(budget.CalculateGrandTotal)
 		}
 	}
 
@@ -88,6 +91,8 @@ func AddExpense() error {
 
 	fmt.Println("Added new expense to budget!")
 
+	storage.Save()
+
 	return nil
 }
 
@@ -117,21 +122,21 @@ func numberPromptHelper(label string) (float64, error) {
 	return number, nil
 }
 
-func currencyConverter(func() float64) error {
+// func currencyConverter(func() float64) error {
 
-	total := budget.CalculateGrandTotal()
+// 	total := budget.CalculateGrandTotal()
 
-	exchange := fixerio.New()
-	exchange.Symbols(fixerio.USD, fixerio.MXN)
+// 	exchange := fixerio.New()
+// 	exchange.Symbols(fixerio.USD, fixerio.MXN)
 
-	rates, err := exchange.GetRates()
-	if err != nil {
-		fmt.Println(err)
-	}
-	fmt.Println(rates)
+// 	rates, err := exchange.GetRates()
+// 	if err != nil {
+// 		fmt.Println(err)
+// 	}
+// 	fmt.Println(rates)
 
-	fmt.Println("Your grand total is $", total, "(USD)")
+// 	fmt.Println("Your grand total is $", total, "(USD), which equals", "__ (MXN)")
 
-	return nil
+// 	return nil
 
-}
+// }

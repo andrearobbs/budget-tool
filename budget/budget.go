@@ -17,6 +17,14 @@ func ViewBudget() []Item {
 	return budget
 }
 
+func SetBudget(b []Item) {
+	budget = b
+}
+
+func ListItems() []Item {
+	return budget
+}
+
 func CalculateGrandTotal() float64 {
 	var sum float64
 
