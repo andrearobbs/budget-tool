@@ -35,6 +35,11 @@ func (c *CLI) MainMenu() {
 		return
 	}
 
+	theBudget, err := c.budgetService.FindOrCreateBudget(budgetname)
+	if err != nil {
+		return
+	}
+
 	for {
 		fmt.Println()
 
@@ -54,7 +59,7 @@ func (c *CLI) MainMenu() {
 
 		switch result {
 		case viewBudgetCmd:
-			c.ViewBudget()
+			c.ListExpenses(theBudget)
 
 		case addExpenseCmd:
 			err := c.AddExpense(budgetname)
@@ -67,13 +72,17 @@ func (c *CLI) MainMenu() {
 
 }
 
-func (c *CLI) ViewBudget() {
-	budgetItems := budget.ViewBudget()
+func (c *CLI) ListExpenses(theBudget budget.Budget) {
+	budgetItems, err := c.budgetService.ListExpenses(theBudget.Id)
+	if err != nil {
+		return
+	}
+
 	for _, x := range budgetItems {
 		fmt.Println(x)
 	}
 
-	total := budget.CalculateGrandTotal()
+	total := c.budgetService.CalculateGrandTotal()
 
 	fmt.Println("Your grand total is $", total)
 }
@@ -92,12 +101,12 @@ func (c *CLI) AddExpense(budgetname string) error {
 		return err
 	}
 
-	newExpense := budget.Item{
+	newExpense := budget.Expense{
 		Name: name,
 		Cost: cost,
 	}
 
-	budget.AddExpense(newExpense)
+	c.budgetService.AddExpense(newExpense)
 
 	fmt.Println("Added new expense to budget!")
 
