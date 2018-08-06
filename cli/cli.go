@@ -37,6 +37,7 @@ func (c *CLI) MainMenu() {
 
 	theBudget, err := c.budgetService.FindOrCreateBudget(budgetname)
 	if err != nil {
+		fmt.Printf("Error Finding or Creating Budget %v\n", err)
 		return
 	}
 
@@ -62,7 +63,7 @@ func (c *CLI) MainMenu() {
 			c.ListExpenses(theBudget)
 
 		case addExpenseCmd:
-			err := c.AddExpense(budgetname)
+			err := c.AddExpense(theBudget)
 			if err != nil {
 				fmt.Printf("Prompt failed %n\n", err)
 				return
@@ -75,6 +76,7 @@ func (c *CLI) MainMenu() {
 func (c *CLI) ListExpenses(theBudget budget.Budget) {
 	budgetItems, err := c.budgetService.ListExpenses(theBudget.Id)
 	if err != nil {
+		fmt.Println(err)
 		return
 	}
 
@@ -82,12 +84,12 @@ func (c *CLI) ListExpenses(theBudget budget.Budget) {
 		fmt.Println(x)
 	}
 
-	total := c.budgetService.CalculateGrandTotal()
+	total := c.budgetService.CalculateGrandTotal(budgetItems)
 
 	fmt.Println("Your grand total is $", total)
 }
 
-func (c *CLI) AddExpense(budgetname string) error {
+func (c *CLI) AddExpense(theBudget budget.Budget) error {
 	namePrompt := promptui.Prompt{
 		Label: "Name this Expense",
 	}
@@ -102,8 +104,9 @@ func (c *CLI) AddExpense(budgetname string) error {
 	}
 
 	newExpense := budget.Expense{
-		Name: name,
-		Cost: cost,
+		Name:     name,
+		Cost:     cost,
+		BudgetId: theBudget.Id,
 	}
 
 	c.budgetService.AddExpense(newExpense)

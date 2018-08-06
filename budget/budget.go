@@ -1,9 +1,8 @@
 package budget
 
-import "database/sql"
-
-var (
-	budget []Expense
+import (
+	"database/sql"
+	"fmt"
 )
 
 type Expense struct {
@@ -29,50 +28,72 @@ func NewService(db *sql.DB) *BudgetService {
 }
 
 const (
-	insertNewBudgetQuery = "INSERT INTO budget (budget_name) VALUES (?); SELECT LAST_INSERT_ID();"
+	insertNewBudgetQuery = "INSERT INTO budget (budget_name) VALUES (?)"
 
-	selectBudgetQuery = "SELECT id, budget_name FROM budget WHERE budget_name = ?"
+	selectLastId = "SELECT LAST_INSERT_ID()"
 
-	insertExpenseQuery = "INSERT INTO expense (expense_name, expense_cost) VALUES (?,?)"
+	selectBudgetQuery = "SELECT budget_id, budget_name FROM budget WHERE budget_name = ?"
 
-	selectExpensesQuery = "SELECT id, expense_name, expense_cost, budget_id FROM expense"
+	insertExpenseQuery = "INSERT INTO expense (expense_name, expense_cost, budget_id) VALUES (?,?,?)"
+
+	selectExpensesQuery = "SELECT expense_id, expense_name, expense_cost, budget_id FROM expense WHERE budget_id = ?"
 )
 
 func (a *BudgetService) FindOrCreateBudget(budgetName string) (Budget, error) {
+	trxn, err := a.db.Begin()
+	if err != nil {
+		return Budget{}, err
+	}
 
-	// a.db.QueryRow budget to see if it exists, if it does return it
-	row := a.db.QueryRow(selectBudgetQuery, budgetName)
+	row := trxn.QueryRow(selectBudgetQuery, budgetName)
 
 	var budget Budget
 
-	err := row.Scan(
+	err = row.Scan(
 		&budget.Id,
 		&budget.Name,
 	)
 	if err == nil {
+
+		trxn.Commit()
 		return budget, nil
 	}
+	fmt.Println(err)
 
-	row = a.db.QueryRow(insertNewBudgetQuery, budgetName)
+	_, err = trxn.Exec(insertNewBudgetQuery, budgetName)
+	if err != nil {
+		trxn.Rollback()
+		return Budget{}, err
+	}
+
+	row = trxn.QueryRow(selectLastId)
 
 	err = row.Scan(
 		&budget.Id,
 	)
 	if err != nil {
+		trxn.Rollback()
 		return Budget{}, err
 	}
 
 	budget.Name = budgetName
 
+	trxn.Commit()
+
 	return budget, nil
 }
 
 func (a *BudgetService) AddExpense(expense Expense) {
-	budget = append(budget, expense)
+
+	_, err := a.db.Exec(insertExpenseQuery, expense.Name, expense.Cost, expense.BudgetId)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
 }
 
 func (a *BudgetService) ListExpenses(budgetId int) ([]Expense, error) {
-	rows, err := a.db.Query(selectExpensesQuery)
+	rows, err := a.db.Query(selectExpensesQuery, budgetId)
 	if err != nil {
 		return nil, err
 	}
@@ -93,13 +114,13 @@ func (a *BudgetService) ListExpenses(budgetId int) ([]Expense, error) {
 
 		expenses = append(expenses, expense)
 	}
-	return budget, nil
+	return expenses, nil
 }
 
-func (a *BudgetService) CalculateGrandTotal() float64 {
+func (a *BudgetService) CalculateGrandTotal(expenses []Expense) float64 {
 	var sum float64
 
-	for _, x := range budget {
+	for _, x := range expenses {
 		sum += x.Cost
 	}
 
